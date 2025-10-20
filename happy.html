@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en" data-theme="mystery">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MystiCute Portal ✨</title>
+  <style>
+    :root {
+      --bg1: #0b1023;
+      --bg2: #180b2e;
+      --text: #e9e7ff;
+      --muted: #bdb8ff;
+      --accent: #caa6ff;
+      --accent-2: #8fd3ff;
+      --glow: #7c3aed;
+      --glass: rgba(255,255,255,0.08);
+      --btn-bg: rgba(255,255,255,0.08);
+      --btn-border: rgba(255,255,255,0.25);
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    [data-theme="cute"] {
+      --bg1: #fff0f7;
+      --bg2: #ffe8f3;
+      --text: #3a2b33;
+      --muted: #7a6571;
+      --accent: #ff7fb0;
+      --accent-2: #85d6ff;
+      --glow: #ff63a6;
+      --glass: rgba(255,255,255,0.55);
+      --btn-bg: rgba(255,255,255,0.85);
+      --btn-border: rgba(0,0,0,0.07);
+      --shadow: 0 12px 30px rgba(255, 123, 172, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 70% 10%, var(--bg2), transparent 60%),
+                  radial-gradient(1200px 800px at 10% 90%, var(--bg2), transparent 60%),
+                  linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x: hidden;
+    }
+
+    /* Starfield canvas */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+    }
+
+    /* Soft vignette */
+    .vignette {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(1200px 800px at 50% 30%, transparent 40%, rgba(0,0,0,0.25));
+      z-index: -1;
+    }
+
+    header {
+      text-align: center;
+      padding: 64px 16px 12px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      text-shadow: 0 6px 30px rgba(124,58,237,0.35);
+      font-size: clamp(28px, 5vw, 44px);
+    }
+    .subtitle {
+      margin: 0 auto;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: clamp(14px, 2.3vw, 18px);
+      line-height: 1.6;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 20px 16px 8px;
+    }
+    button {
+      background: var(--btn-bg);
+      color: var(--text);
+      border: 1px solid var(--btn-border);
+      padding: 10px 16px;
+      border-radius: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: var(--shadow);
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+      font-weight: 600;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(124,58,237,0.25);
+      border-color: transparent;
+    }
+
+    .orbs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      max-width: 1000px;
+      margin: 24px auto 32px;
+      padding: 0 16px;
+    }
+    .orb {
+      position: relative;
+      aspect-ratio: 1/1;
+      border-radius: 24px;
+      background:
+        radial-gradient(120px 120px at 30% 30%, rgba(255,255,255,0.35), transparent 40%),
+        radial-gradient(200px 200px at 70% 70%, rgba(255,255,255,0.12), transparent 50%),
+        linear-gradient(135deg, rgba(202,166,255,0.25), rgba(133,214,255,0.2));
+      border: 1px solid var(--btn-border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      user-select: none;
+      transition: transform .2s ease, box-shadow .3s ease, border-color .2s ease;
+      isolation: isolate;
+    }
+    .orb:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 18px 40px rgba(124,58,237,0.35);
+      border-color: transparent;
+    }
+    .orb .title {
+      text-align: center;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: 0.2px;
+      text-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+    .orb .emoji {
+      position: absolute;
+      font-size: 42px;
+      opacity: 0.8;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+      transform: translateY(0);
+      animation: floaty 5s ease-in-out infinite;
+    }
+    .orb .emoji:nth-child(2) { top: 16px; left: 16px; animation-duration: 5.8s; }
+    .orb .emoji:nth-child(3) { bottom: 14px; right: 18px; animation-duration: 6.6s; }
+    @keyframes floaty { 50% { transform: translateY(-6px); } }
+
+    .note {
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+      margin: 6px 0 0;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal.open { display: flex; }
+    .card {
+      width: min(720px, 92vw);
+      background: var(--glass);
+      border: 1px solid var(--btn-border);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      color: var(--text);
+      padding: 22px 18px;
+      position: relative;
+    }
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+    .card p { margin: 0; line-height: 1.65; }
+    .close {
+      position: absolute; top: 8px; right: 8px;
+      border-radius: 10px; padding: 6px 10px;
+      background: var(--btn-bg);
+      border: 1px solid var(--btn-border);
+    }
+
+    /* Sparkles / hearts */
+    .sparkle {
+      position: fixed;
+      pointer-events: none;
+      font-size: 18px;
+      will-change: transform, opacity;
+      animation: popfade .8s ease forwards;
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.25));
+    }
+    @keyframes popfade {
+      0% { transform: translate(-50%, -50%) scale(.6) rotate(0); opacity: 0; }
+      10% { opacity: 1; }
+      60% { transform: translate(-50%, -70%) scale(1.05) rotate(12deg); }
+      100% { opacity: 0; transform: translate(-50%, -120%) scale(.9) rotate(22deg); }
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 18px 12px 28px;
+    }
+    .tip {
+      opacity: 0.75;
+    }
+
+    /* Accessibility: reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      .orb, button, .sparkle { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header>
+    <h1 id="headline">A tiny portal of mystery + cute just for you ✨</h1>
+    <p class="subtitle" id="sub">
+      Click the orbs below, make a wish, and let the universe send a little cozy surprise. There are hidden sparkles, soft hugs, and tiny mischief waiting.
+    </p>
+  </header>
+
+  <div class="controls">
+    <button id="themeToggle">Switch to Cute Mode 🌸</button>
+    <button id="wishBtn">Make a Wish 🌠</button>
+    <button id="hugBtn">Send a Hug 🤗</button>
+  </div>
+
+  <section class="orbs" aria-label="Mystery and cute orbs">
+    <div class="orb" data-kind="mystery" role="button" tabindex="0" aria-label="Open a mystery note">
+      <div class="emoji">🔮</div>
+      <div class="emoji">✨</div>
+      <div class="title">Mystery Note</div>
+      <div class="note">A secret whisper from the stars</div>
+    </div>
+
+    <div class="orb" data-kind="cute" role="button" tabindex="0" aria-label="Open a cute surprise">
+      <div class="emoji">🐾</div>
+      <div class="emoji">💖</div>
+      <div class="title">Cute Surprise</div>
+      <div class="note">Soft things. Warm heart. Smol chaos.</div>
+    </div>
+
+    <div class="orb" data-kind="quest" role="button" tabindex="0" aria-label="Start a tiny quest">
+      <div class="emoji">🗝️</div>
+      <div class="emoji">🌙</div>
+      <div class="title">Tiny Quest</div>
+      <div class="note">Complete a little constellation</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="tip">Psst: press H for hearts, S for a shooting star, M to toggle theme.</div>
+  </footer>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="card" role="document">
+      <button class="close" id="closeModal" aria-label="Close">Close ✖</button>
+      <h3 id="modalTitle">Surprise!</h3>
+      <p id="modalBody"></p>
+    </div>
+  </div>
+
+  <script>
+    // Personalize these!
+    const friendName = "MIss"; // Change this to her name, e.g., "Maya" 💫
+
+    const mysteryNotes = [
+      "A secret for " + friendName + ": the stars took a vote — they’re all rooting for you.",
+      "In a quiet pocket of the cosmos, your courage is already shining.",
+      "You’re a gentle kind of magic. The world is better with you in it.",
+      "Even on cloudy nights, your constellations still exist. They’re just resting.",
+      "Some days are puzzles, not problems. You’re allowed to solve them slowly.",
+      "The moon sent word: take a breath, take a sip of water, be soft with yourself.",
+      "Your heart has weathered storms and still knows how to garden joy.",
+      "The universe is big, but your kindness reaches just as far.",
+      "It’s okay not to be okay. You’re loved even when you’re quiet.",
+      "Tiny progress counts. Blink-and-you-missed-it victories are still victories."
+    ];
+
+    const cuteSurprises = [
+      "A pocket-sized cat says: meow means ‘you’ve got this’ 🐱💖",
+      "This bunny has legally adopted your worries and turned them into marshmallows 🐰🍡",
+      "You have been granted 3 sparkles of unreasonably good luck ✨✨✨",
+      "A gentle ghost says ‘boo’ but like… supportive boo 👻💞",
+      "Certified cozy: blanket, warm drink, and a playlist of good things ☕🧸",
+      "Sending a brigade of ducklings to waddle away stress 🦆🦆🦆",
+      "A sprinkle of chaos: every cupcake is now 12% more delicious 🧁😌",
+      "A dragon the size of a bread loaf will guard your peace today 🐉🍞",
+      "Your smile is now upgraded with +2 sparkle and +1 giggle ✨😄",
+      "Seal of approval: arf arf, you’re doing amazing 🦭💗"
+    ];
+
+    const questSteps = [
+      "Step 1: Take a deep breath. Slow. In and out. That’s it.",
+      "Step 2: Think of one tiny thing you like (color, song, cloud, anything).",
+      "Step 3: Tap ‘Make a Wish’. Don’t overthink it — whisper it to the stars.",
+      "Step 4: You did it. That counts. Here’s a bonus sparkle for bravery ✨"
+    ];
+
+    // Type a nicer headline if you add a name
+    const headline = document.getElementById('headline');
+    if (friendName && friendName !== "Friend") {
+      headline.textContent = `A tiny portal of mystery + cute for ${friendName} ✨`;
+    }
+
+    // Theme toggle
+    const root = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('mysticute-theme', theme);
+      themeToggle.textContent = theme === 'mystery' ? 'Switch to Cute Mode 🌸' : 'Switch to Mystery Mode 🌌';
+    }
+    setTheme(localStorage.getItem('mysticute-theme') || 'mystery');
+    themeToggle.addEventListener('click', () => {
+      const next = (document.documentElement.getAttribute('data-theme') === 'mystery') ? 'cute' : 'mystery';
+      setTheme(next);
+      burstHearts(12);
+    });
+
+    // Modal helpers
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const closeModalBtn = document.getElementById('closeModal');
+    function openModal(title, body) {
+      modalTitle.textContent = title;
+      modalBody.innerHTML = body;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    // Orbs
+    document.querySelectorAll('.orb').forEach(orb => {
+      orb.addEventListener('click', () => handleOrb(orb.dataset.kind));
+      orb.addEventListener('keypress', (e) => { if (e.key === 'Enter' || e.key === ' ') handleOrb(orb.dataset.kind); });
+    });
+
+    function handleOrb(kind) {
+      if (kind === 'mystery') {
+        const msg = pick(mysteryNotes);
+        openModal('Mystery Note 🔮', wrapInCard(msg));
+        twinkleBurst();
+      } else if (kind === 'cute') {
+        const msg = pick(cuteSurprises);
+        openModal('Cute Surprise 💖', wrapInCard(msg));
+        burstHearts(16);
+      } else if (kind === 'quest') {
+        const body = `
+          <ol style="margin:0; padding-left: 20px;">
+            ${questSteps.map(s => `<li style="margin: 8px 0;">${s}</li>`).join('')}
+          </ol>
+          <div style="margin-top:14px; opacity:.8;">When you’re ready, press the star button below.</div>
+          <div style="margin-top:12px;">
+            <button id="questStar" style="margin-right:8px;">⭐ Build Constellation</button>
+          </div>
+        `;
+        openModal('Tiny Quest 🗝️', body);
+        setTimeout(() => {
+          const qs = document.getElementById('questStar');
+          if (qs) qs.addEventListener('click', () => {
+            shootingStar();
+            setTimeout(() => {
+              openModal('Constellation Complete ✨', wrapInCard(`Wish recorded. The universe heard you, ${friendName}.`));
+              burstHearts(18);
+            }, 700);
+          });
+        }, 50);
+      }
+    }
+
+    function wrapInCard(text) {
+      return `<div style="padding:12px 8px; font-size: 16px; line-height:1.7;">
+        ${escapeHTML(text)}
+      </div>`;
+    }
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    // Buttons
+    document.getElementById('wishBtn').addEventListener('click', () => {
+      openModal('Make a Wish 🌠', wrapInCard('Close your eyes for 3 seconds and imagine it. Ready? 3... 2... 1... The sky is on your side.'));
+      for (let i=0; i<3; i++) setTimeout(shootingStar, i*350);
+    });
+    document.getElementById('hugBtn').addEventListener('click', () => {
+      const hug = `
+        <div style="font-size: 42px; text-align:center; margin-bottom: 6px;">ʕ•́ᴥ•̀ʔっ💞</div>
+        <div>Hug delivered. It’s warm, soft, and lasts as long as you need.</div>
+      `;
+      openModal('A Hug For You 🤗', hug);
+      burstHearts(20);
+    });
+
+    // Keyboard easter eggs
+    window.addEventListener('keydown', (e) => {
+      if (e.key.toLowerCase() === 'h') burstHearts(14);
+      if (e.key.toLowerCase() === 's') shootingStar();
+      if (e.key.toLowerCase() === 'm') setTheme(
+        document.documentElement.getAttribute('data-theme') === 'mystery' ? 'cute' : 'mystery'
+      );
+    });
+
+    // Sparkle trail
+    let lastSparkle = 0;
+    window.addEventListener('pointermove', (e) => {
+      const now = performance.now();
+      if (now - lastSparkle > 40) {
+        spawnSparkle(e.clientX, e.clientY);
+        lastSparkle = now;
+      }
+    });
+
+    function spawnSparkle(x, y, emoji) {
+      const el = document.createElement('div');
+      el.className = 'sparkle';
+      const theme = document.documentElement.getAttribute('data-theme');
+      el.textContent = emoji || (theme === 'cute' ? (Math.random() < 0.5 ? '✨' : '💖') : '✨');
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.zIndex = 60;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 900);
+    }
+
+    function burstHearts(n=12) {
+      const { innerWidth: w, innerHeight: h } = window;
+      for (let i=0; i<n; i++) {
+        setTimeout(() => {
+          const x = Math.random() * w * 0.9 + w*0.05;
+          const y = Math.random() * h * 0.8 + h*0.1;
+          spawnSparkle(x, y, Math.random() < 0.6 ? '💖' : '💫');
+        }, i * 35);
+      }
+    }
+
+    // Starfield
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    let shooters = [];
+    let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function resize() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      makeStars();
+    }
+    window.addEventListener('resize', resize);
+
+    function makeStars() {
+      const count = Math.min(180, Math.floor(window.innerWidth / 6));
+      stars = [];
+      for (let i=0; i<count; i++) {
+        stars.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          r: Math.random() * 1.3 + 0.2,
+          alpha: Math.random() * 0.7 + 0.3,
+          tw: Math.random() * 2 + 0.5,
+          hue: Math.random() < 0.15 ? 280 : 210 // a few purple stars
+        });
+      }
+      draw(); // initial
+    }
+
+    function draw() {
+      ctx.clearRect(0,0,canvas.width, canvas.height);
+      // background subtle glow is in CSS; just stars here
+      for (const s of stars) {
+        if (!reduceMotion) s.alpha = 0.5 + Math.sin((performance.now()/1000)*s.tw + s.x) * 0.35;
+        const gradient = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r*3);
+        const theme = document.documentElement.getAttribute('data-theme');
+        const color = theme === 'cute' ? `hsla(${s.hue},90%,80%,` : `hsla(${s.hue},80%,70%,`;
+        gradient.addColorStop(0, color + (0.9*s.alpha) + ')');
+        gradient.addColorStop(1, color + '0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r*2.2, 0, Math.PI*2);
+        ctx.fill();
+      }
+      // shooting stars
+      for (let i=shooters.length-1; i>=0; i--) {
+        const sh = shooters[i];
+        sh.x += sh.vx;
+        sh.y += sh.vy;
+        sh.life--;
+        ctx.strokeStyle = `rgba(255,255,255,${Math.max(0, sh.life/30)})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sh.x, sh.y);
+        ctx.lineTo(sh.x - sh.vx*4, sh.y - sh.vy*4);
+        ctx.stroke();
+        if (sh.life <= 0) shooters.splice(i,1);
+      }
+      if (!reduceMotion) requestAnimationFrame(draw);
+    }
+
+    function shootingStar() {
+      if (reduceMotion) return;
+      const y = Math.random() * window.innerHeight * 0.5 + 40;
+      shooters.push({ x: -60, y, vx: 10 + Math.random()*6, vy: 2 + Math.random()*2, life: 30 });
+    }
+
+    function twinkleBurst() {
+      if (reduceMotion) return;
+      for (let i=0; i<3; i++) setTimeout(shootingStar, i*140);
+    }
+
+    resize();
+    if (!reduceMotion) requestAnimationFrame(draw);
+
+    // Accessibility: focus styles on keyboard
+    (function() {
+      let usingMouse = false;
+      function setOutline() {
+        document.body.style.outline = usingMouse ? 'none' : '';
+      }
+      window.addEventListener('mousedown', () => { usingMouse = true; setOutline(); }, true);
+      window.addEventListener('keydown', () => { usingMouse = false; setOutline(); }, true);
+    })();
+
+  </script>
+</body>
+</html>
